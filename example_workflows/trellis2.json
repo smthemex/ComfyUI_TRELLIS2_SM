@@ -1,0 +1,469 @@
+{
+  "id": "6c92754e-c9f4-4988-8507-c36c1396969f",
+  "revision": 0,
+  "last_node_id": 29,
+  "last_link_id": 21,
+  "nodes": [
+    {
+      "id": 13,
+      "type": "Trellis2_SM_Model",
+      "pos": [
+        20485.26524223182,
+        -601.2698914912742
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "Trellis2_SM_Model",
+          "type": "Trellis2_SM_Model",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Model"
+      },
+      "widgets_values": [
+        "F:\\test\\ComfyUI\\models\\diffusers\\microsoft\\TRELLIS.2-4B",
+        "xformers",
+        "auto"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "Trellis2_SM_Dino",
+      "pos": [
+        20177.025552376625,
+        -490.141497357506
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "Trellis2_SM_Dino",
+          "type": "Trellis2_SM_Dino",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Dino"
+      },
+      "widgets_values": [
+        "dinov3-vitl16-pretrain-lvd1689m.safetensors"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "Trellis2_SM_Preprocess",
+      "pos": [
+        20487.042441822603,
+        -424.33372855309153
+      ],
+      "size": [
+        256.4328585407602,
+        146
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "Trellis2_SM_Dino",
+          "link": 5
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 6
+        },
+        {
+          "name": "mask",
+          "shape": 7,
+          "type": "MASK",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "cond",
+          "type": "CONDITIONING",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Preprocess"
+      },
+      "widgets_values": [
+        "",
+        "RGBA.safetensors",
+        true
+      ]
+    },
+    {
+      "id": 26,
+      "type": "Trellis2_SM_Sampler",
+      "pos": [
+        20790.21450659073,
+        -589.4627837509721
+      ],
+      "size": [
+        270,
+        126
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "Trellis2_SM_Model",
+          "link": 13
+        },
+        {
+          "name": "conds",
+          "type": "CONDITIONING",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model_path",
+          "type": "STRING",
+          "links": [
+            17,
+            18,
+            20
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Sampler"
+      },
+      "widgets_values": [
+        582365425,
+        "randomize",
+        4096
+      ]
+    },
+    {
+      "id": 28,
+      "type": "PreviewAny",
+      "pos": [
+        20787.737745734557,
+        -367.79605657799556
+      ],
+      "size": [
+        277.2957594412219,
+        100.29360389141027
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 17
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 18,
+      "type": "LoadImage",
+      "pos": [
+        20191.20407933563,
+        -376.77004807953716
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "121283862.png",
+        "image"
+      ]
+    },
+    {
+      "id": 22,
+      "type": "Preview3D",
+      "pos": [
+        21076.975557575293,
+        -472.5156003606797
+      ],
+      "size": [
+        359.32354362531623,
+        445.47296030761584
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "camera_info",
+          "shape": 7,
+          "type": "LOAD3D_CAMERA",
+          "link": null
+        },
+        {
+          "name": "bg_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "model_file",
+          "type": "STRING",
+          "widget": {
+            "name": "model_file"
+          },
+          "link": 18
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "Preview3D",
+        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_36cc2e2b-fbca-419e-9c5a-8a16ca1367a2_89241.glb",
+        "Resource Folder": "ComfyUI311/ComfyUI/output",
+        "Scene Config": {
+          "showGrid": true,
+          "backgroundColor": "#282828",
+          "backgroundImage": "",
+          "backgroundRenderMode": "tiled"
+        },
+        "Camera Config": {
+          "cameraType": "perspective",
+          "fov": 35,
+          "state": {
+            "position": {
+              "x": 4.315290546875272,
+              "y": 2.182098156698114,
+              "z": 8.276472144530409
+            },
+            "target": {
+              "x": 0,
+              "y": 2.5,
+              "z": 0
+            },
+            "zoom": 1,
+            "cameraType": "perspective"
+          }
+        },
+        "Light Config": {
+          "intensity": 3
+        }
+      },
+      "widgets_values": [
+        "F:/ComfyUI311/ComfyUI/output/Trellis2_36cc2e2b-fbca-419e-9c5a-8a16ca1367a2_89241.glb",
+        ""
+      ]
+    },
+    {
+      "id": 29,
+      "type": "Trellis2_SM_Save",
+      "pos": [
+        21099.24532398659,
+        -591.368994728439
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model_path",
+          "type": "STRING",
+          "link": 20
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model_path",
+          "type": "STRING",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Save"
+      },
+      "widgets_values": [
+        true,
+        false
+      ]
+    },
+    {
+      "id": 19,
+      "type": "PreviewAny",
+      "pos": [
+        20830.325151482673,
+        -230.61965175920045
+      ],
+      "size": [
+        215.4269162048513,
+        214.88157795868767
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "type": "*",
+          "link": 21
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": []
+    }
+  ],
+  "links": [
+    [
+      5,
+      17,
+      0,
+      16,
+      0,
+      "Trellis2_SM_Dino"
+    ],
+    [
+      6,
+      18,
+      0,
+      16,
+      1,
+      "IMAGE"
+    ],
+    [
+      13,
+      13,
+      0,
+      26,
+      0,
+      "Trellis2_SM_Model"
+    ],
+    [
+      14,
+      16,
+      0,
+      26,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      17,
+      26,
+      0,
+      28,
+      0,
+      "*"
+    ],
+    [
+      18,
+      26,
+      0,
+      22,
+      2,
+      "STRING"
+    ],
+    [
+      20,
+      26,
+      0,
+      29,
+      0,
+      "STRING"
+    ],
+    [
+      21,
+      29,
+      0,
+      19,
+      0,
+      "*"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Group",
+      "bounding": [
+        20173.40115797959,
+        -673.7754734096292,
+        1551.7568962495752,
+        673.8556968781664
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.1167815779425907,
+      "offset": [
+        -19857.716421581383,
+        767.2973114164027
+      ]
+    },
+    "workflowRendererVersion": "LG",
+    "frontendVersion": "1.32.9",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
