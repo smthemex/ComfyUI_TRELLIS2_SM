@@ -1,15 +1,15 @@
 {
   "id": "6c92754e-c9f4-4988-8507-c36c1396969f",
   "revision": 0,
-  "last_node_id": 29,
-  "last_link_id": 21,
+  "last_node_id": 31,
+  "last_link_id": 26,
   "nodes": [
     {
       "id": 13,
       "type": "Trellis2_SM_Model",
       "pos": [
-        20485.26524223182,
-        -601.2698914912742
+        20426.564772666305,
+        -475.90964377237276
       ],
       "size": [
         270,
@@ -38,42 +38,11 @@
       ]
     },
     {
-      "id": 17,
-      "type": "Trellis2_SM_Dino",
-      "pos": [
-        20177.025552376625,
-        -490.141497357506
-      ],
-      "size": [
-        270,
-        58
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "Trellis2_SM_Dino",
-          "type": "Trellis2_SM_Dino",
-          "links": [
-            5
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Trellis2_SM_Dino"
-      },
-      "widgets_values": [
-        "dinov3-vitl16-pretrain-lvd1689m.safetensors"
-      ]
-    },
-    {
       "id": 16,
       "type": "Trellis2_SM_Preprocess",
       "pos": [
-        20487.042441822603,
-        -424.33372855309153
+        20430.910496155826,
+        -308.5539861879152
       ],
       "size": [
         256.4328585407602,
@@ -91,13 +60,13 @@
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 6
+          "link": 24
         },
         {
           "name": "mask",
           "shape": 7,
           "type": "MASK",
-          "link": null
+          "link": 25
         }
       ],
       "outputs": [
@@ -114,7 +83,7 @@
       },
       "widgets_values": [
         "",
-        "RGBA.safetensors",
+        "none",
         true
       ]
     },
@@ -122,12 +91,12 @@
       "id": 26,
       "type": "Trellis2_SM_Sampler",
       "pos": [
-        20790.21450659073,
-        -589.4627837509721
+        20714.600330362515,
+        -478.0314524452822
       ],
       "size": [
         270,
-        126
+        174
       ],
       "flags": {},
       "order": 4,
@@ -149,7 +118,6 @@
           "name": "model_path",
           "type": "STRING",
           "links": [
-            17,
             18,
             20
           ]
@@ -159,88 +127,64 @@
         "Node name for S&R": "Trellis2_SM_Sampler"
       },
       "widgets_values": [
-        582365425,
+        2063585133,
         "randomize",
-        4096
+        4096,
+        "1024_cascade",
+        true
       ]
     },
     {
-      "id": 28,
-      "type": "PreviewAny",
+      "id": 29,
+      "type": "Trellis2_SM_Save",
       "pos": [
-        20787.737745734557,
-        -367.79605657799556
-      ],
-      "size": [
-        277.2957594412219,
-        100.29360389141027
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "source",
-          "type": "*",
-          "link": 17
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "Node name for S&R": "PreviewAny"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 18,
-      "type": "LoadImage",
-      "pos": [
-        20191.20407933563,
-        -376.77004807953716
+        20709.416515251476,
+        -243.68878471339363
       ],
       "size": [
         270,
-        314
+        82
       ],
       "flags": {},
-      "order": 2,
+      "order": 6,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "model_path",
+          "type": "STRING",
+          "link": 20
+        }
+      ],
       "outputs": [
         {
-          "name": "IMAGE",
-          "type": "IMAGE",
+          "name": "model_path",
+          "type": "STRING",
           "links": [
-            6
+            26
           ]
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": []
         }
       ],
       "properties": {
-        "Node name for S&R": "LoadImage"
+        "Node name for S&R": "Trellis2_SM_Save"
       },
       "widgets_values": [
-        "121283862.png",
-        "image"
+        true,
+        false
       ]
     },
     {
       "id": 22,
       "type": "Preview3D",
       "pos": [
-        21076.975557575293,
-        -472.5156003606797
+        21000.257692424373,
+        -477.0831576174902
       ],
       "size": [
-        359.32354362531623,
-        445.47296030761584
+        318.62216893189907,
+        420.1476328959932
       ],
       "flags": {},
-      "order": 6,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
@@ -267,7 +211,7 @@
       "outputs": [],
       "properties": {
         "Node name for S&R": "Preview3D",
-        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_36cc2e2b-fbca-419e-9c5a-8a16ca1367a2_89241.glb",
+        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.glb",
         "Resource Folder": "ComfyUI311/ComfyUI/output",
         "Scene Config": {
           "showGrid": true,
@@ -280,9 +224,9 @@
           "fov": 35,
           "state": {
             "position": {
-              "x": 4.315290546875272,
-              "y": 2.182098156698114,
-              "z": 8.276472144530409
+              "x": -1.966960589547961,
+              "y": 5.142982460737382,
+              "z": 8.04883612146272
             },
             "target": {
               "x": 0,
@@ -295,77 +239,164 @@
         },
         "Light Config": {
           "intensity": 3
+        },
+        "Model Config": {
+          "upDirection": "original",
+          "materialMode": "original"
         }
       },
       "widgets_values": [
-        "F:/ComfyUI311/ComfyUI/output/Trellis2_36cc2e2b-fbca-419e-9c5a-8a16ca1367a2_89241.glb",
+        "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.glb",
         ""
       ]
     },
     {
-      "id": 29,
-      "type": "Trellis2_SM_Save",
+      "id": 17,
+      "type": "Trellis2_SM_Dino",
       "pos": [
-        21099.24532398659,
-        -591.368994728439
+        20132.254012887493,
+        -464.2735019254392
       ],
       "size": [
         270,
-        82
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "Trellis2_SM_Dino",
+          "type": "Trellis2_SM_Dino",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Dino"
+      },
+      "widgets_values": [
+        "dinov3-vitl16-pretrain-lvd1689m.safetensors"
+      ]
+    },
+    {
+      "id": 18,
+      "type": "LoadImage",
+      "pos": [
+        20135.2393246142,
+        -356.6480774412212
+      ],
+      "size": [
+        270,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            24
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            25
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "8ce83f6a28910e755902de10918672e77dd23476f43f0f1521c48667de6cea84.webp",
+        "image"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "Preview3D",
+      "pos": [
+        21335.74125597369,
+        -473.41890007838833
+      ],
+      "size": [
+        291.4902483475489,
+        420.84091665139806
       ],
       "flags": {},
       "order": 7,
       "mode": 0,
       "inputs": [
         {
-          "name": "model_path",
-          "type": "STRING",
-          "link": 20
-        }
-      ],
-      "outputs": [
+          "name": "camera_info",
+          "shape": 7,
+          "type": "LOAD3D_CAMERA",
+          "link": null
+        },
         {
-          "name": "model_path",
-          "type": "STRING",
-          "links": [
-            21
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Trellis2_SM_Save"
-      },
-      "widgets_values": [
-        true,
-        false
-      ]
-    },
-    {
-      "id": 19,
-      "type": "PreviewAny",
-      "pos": [
-        20830.325151482673,
-        -230.61965175920045
-      ],
-      "size": [
-        215.4269162048513,
-        214.88157795868767
-      ],
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
+          "name": "bg_image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
         {
-          "name": "source",
-          "type": "*",
-          "link": 21
+          "name": "model_file",
+          "type": "STRING",
+          "widget": {
+            "name": "model_file"
+          },
+          "link": 26
         }
       ],
       "outputs": [],
       "properties": {
-        "Node name for S&R": "PreviewAny"
+        "Node name for S&R": "Preview3D",
+        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.obj",
+        "Resource Folder": "ComfyUI311/ComfyUI/output",
+        "Scene Config": {
+          "showGrid": true,
+          "backgroundColor": "#282828",
+          "backgroundImage": "",
+          "backgroundRenderMode": "tiled"
+        },
+        "Camera Config": {
+          "cameraType": "perspective",
+          "fov": 35,
+          "state": {
+            "position": {
+              "x": -3.6168215654352083,
+              "y": 2.93871502321915,
+              "z": 9.654098615585399
+            },
+            "target": {
+              "x": 0,
+              "y": 2.5,
+              "z": 0
+            },
+            "zoom": 1,
+            "cameraType": "perspective"
+          }
+        },
+        "Light Config": {
+          "intensity": 3
+        },
+        "Model Config": {
+          "upDirection": "original",
+          "materialMode": "normal"
+        }
       },
-      "widgets_values": []
+      "widgets_values": [
+        "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.obj",
+        ""
+      ]
     }
   ],
   "links": [
@@ -376,14 +407,6 @@
       16,
       0,
       "Trellis2_SM_Dino"
-    ],
-    [
-      6,
-      18,
-      0,
-      16,
-      1,
-      "IMAGE"
     ],
     [
       13,
@@ -402,14 +425,6 @@
       "CONDITIONING"
     ],
     [
-      17,
-      26,
-      0,
-      28,
-      0,
-      "*"
-    ],
-    [
       18,
       26,
       0,
@@ -426,12 +441,28 @@
       "STRING"
     ],
     [
-      21,
+      24,
+      18,
+      0,
+      16,
+      1,
+      "IMAGE"
+    ],
+    [
+      25,
+      18,
+      1,
+      16,
+      2,
+      "MASK"
+    ],
+    [
+      26,
       29,
       0,
-      19,
-      0,
-      "*"
+      31,
+      2,
+      "STRING"
     ]
   ],
   "groups": [
@@ -439,10 +470,10 @@
       "id": 1,
       "title": "Group",
       "bounding": [
-        20173.40115797959,
-        -673.7754734096292,
-        1551.7568962495752,
-        673.8556968781664
+        20122.254012887493,
+        -551.631452445282,
+        1516.9673971440097,
+        518.9833750040609
       ],
       "color": "#3f789e",
       "font_size": 24,
@@ -452,10 +483,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.1167815779425907,
+      "scale": 1.1167815779425923,
       "offset": [
-        -19857.716421581383,
-        767.2973114164027
+        -19959.837677205564,
+        753.5054002975234
       ]
     },
     "workflowRendererVersion": "LG",

@@ -1,0 +1,16 @@
+[project]
+name = "trellis2_sm"
+description = "TRELLIS.2:Native and Compact Structured Latents for 3D Generation,load single dinov3"
+version = "1.0.0"
+license = {file = "LICENSE"}
+dependencies = ["torch", "torchvision", "pillow", "tqdm", "trimesh", "xatlas", "git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8", "xformers", "tensorboard", "pandas", "lpips", "zstandard", "imageio", "kornia", "timm", "pillow-simd", "easydict", "opencv-python-headless"]
+
+[project.urls]
+Repository = "https://github.com/smthemex/ComfyUI_TRELLIS2_SM"
+#  Used by Comfy Registry https://registry.comfy.org
+
+[tool.comfy]
+PublisherId = "smthemex"
+DisplayName = "ComfyUI_TRELLIS2_SM"
+Icon = ""
+includes = []
