@@ -18,7 +18,8 @@ git clone https://github.com/smthemex/ComfyUI_TRELLIS2_SM.git
 pip install -r requirements.txt
 ```
 * 2.2 step 2
-* install (nvdiffrast,nvdiffrec,CuMesh,flex_gemm,o-voxel )  ,if failed to install ,find a wheel.. /不好安装就去找轮子吧   
+* install (nvdiffrast,nvdiffrec,CuMesh,flex_gemm,o-voxel )  ,if failed to install ,find a wheel.. /不好安装就去找轮子吧
+* [some wheel ](https://huggingface.co/smthem/TRELLIS.2-Wheels/tree/main)
 ```
 export TORCH_CUDA_ARCH_LIST="8.9"   # dep your cuda list
 git clone -b v0.4.0 https://github.com/NVlabs/nvdiffrast.git /tmp/extensions/nvdiffrast
