@@ -108,8 +108,7 @@ def preprocess_image2alpha(images: list,device,rembg_model=None,repo=True,low_vr
             output = input
         else:
             input = input.convert('RGB')
-            if low_vram:
-                rembg_model.to(device)
+            rembg_model.to(device)
             if repo:
                 output = rembg_model(input)
             else:
