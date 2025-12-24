@@ -5,89 +5,6 @@
   "last_link_id": 26,
   "nodes": [
     {
-      "id": 13,
-      "type": "Trellis2_SM_Model",
-      "pos": [
-        20426.564772666305,
-        -475.90964377237276
-      ],
-      "size": [
-        270,
-        106
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "Trellis2_SM_Model",
-          "type": "Trellis2_SM_Model",
-          "links": [
-            13
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Trellis2_SM_Model"
-      },
-      "widgets_values": [
-        "F:\\test\\ComfyUI\\models\\diffusers\\microsoft\\TRELLIS.2-4B",
-        "xformers",
-        "auto"
-      ]
-    },
-    {
-      "id": 16,
-      "type": "Trellis2_SM_Preprocess",
-      "pos": [
-        20430.910496155826,
-        -308.5539861879152
-      ],
-      "size": [
-        256.4328585407602,
-        146
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "Trellis2_SM_Dino",
-          "link": 5
-        },
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 24
-        },
-        {
-          "name": "mask",
-          "shape": 7,
-          "type": "MASK",
-          "link": 25
-        }
-      ],
-      "outputs": [
-        {
-          "name": "cond",
-          "type": "CONDITIONING",
-          "links": [
-            14
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "Trellis2_SM_Preprocess"
-      },
-      "widgets_values": [
-        "",
-        "none",
-        true
-      ]
-    },
-    {
       "id": 26,
       "type": "Trellis2_SM_Sampler",
       "pos": [
@@ -127,7 +44,7 @@
         "Node name for S&R": "Trellis2_SM_Sampler"
       },
       "widgets_values": [
-        2063585133,
+        313864540,
         "randomize",
         4096,
         "1024_cascade",
@@ -211,7 +128,7 @@
       "outputs": [],
       "properties": {
         "Node name for S&R": "Preview3D",
-        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.glb",
+        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_40774_texture.glb",
         "Resource Folder": "ComfyUI311/ComfyUI/output",
         "Scene Config": {
           "showGrid": true,
@@ -224,9 +141,9 @@
           "fov": 35,
           "state": {
             "position": {
-              "x": -1.966960589547961,
-              "y": 5.142982460737382,
-              "z": 8.04883612146272
+              "x": -2.6582306898269605,
+              "y": 5.337526619878036,
+              "z": 7.613634077444198
             },
             "target": {
               "x": 0,
@@ -246,7 +163,7 @@
         }
       },
       "widgets_values": [
-        "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.glb",
+        "F:/ComfyUI311/ComfyUI/output/Trellis2_40774_texture.glb",
         ""
       ]
     },
@@ -262,7 +179,7 @@
         58
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -293,7 +210,7 @@
         314
       ],
       "flags": {},
-      "order": 2,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -316,8 +233,58 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "8ce83f6a28910e755902de10918672e77dd23476f43f0f1521c48667de6cea84.webp",
+        "image.webp",
         "image"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "Trellis2_SM_Preprocess",
+      "pos": [
+        20430.910496155826,
+        -308.5539861879152
+      ],
+      "size": [
+        256.4328585407602,
+        146
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "Trellis2_SM_Dino",
+          "link": 5
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "name": "mask",
+          "shape": 7,
+          "type": "MASK",
+          "link": 25
+        }
+      ],
+      "outputs": [
+        {
+          "name": "conds",
+          "type": "CONDITIONING",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Preprocess"
+      },
+      "widgets_values": [
+        "F:\\ComfyUI311\\ComfyUI\\custom_nodes\\ComfyUI_TRELLIS2_SM\\TRELLIS_2\\assets\\example_texturing\\the_forgotten_knight.ply",
+        "RGBA.safetensors",
+        true
       ]
     },
     {
@@ -325,7 +292,7 @@
       "type": "Preview3D",
       "pos": [
         21335.74125597369,
-        -473.41890007838833
+        -474.51331816003324
       ],
       "size": [
         291.4902483475489,
@@ -359,7 +326,7 @@
       "outputs": [],
       "properties": {
         "Node name for S&R": "Preview3D",
-        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.obj",
+        "Last Time Model File": "F:/ComfyUI311/ComfyUI/output/Trellis2_40774_texture.obj",
         "Resource Folder": "ComfyUI311/ComfyUI/output",
         "Scene Config": {
           "showGrid": true,
@@ -394,8 +361,42 @@
         }
       },
       "widgets_values": [
-        "F:/ComfyUI311/ComfyUI/output/Trellis2_02450.obj",
+        "F:/ComfyUI311/ComfyUI/output/Trellis2_40774_texture.obj",
         ""
+      ]
+    },
+    {
+      "id": 13,
+      "type": "Trellis2_SM_Model",
+      "pos": [
+        20421.137906145745,
+        -486.763339550259
+      ],
+      "size": [
+        270,
+        130
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "Trellis2_SM_Model",
+          "type": "Trellis2_SM_Model",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "Trellis2_SM_Model"
+      },
+      "widgets_values": [
+        "F:\\test\\ComfyUI\\models\\diffusers\\microsoft\\TRELLIS.2-4B",
+        "xformers",
+        "auto",
+        true
       ]
     }
   ],
@@ -485,12 +486,12 @@
     "ds": {
       "scale": 1.1167815779425923,
       "offset": [
-        -19959.837677205564,
-        753.5054002975234
+        -19961.398369006223,
+        760.2092142823242
       ]
     },
+    "frontendVersion": "1.34.9",
     "workflowRendererVersion": "LG",
-    "frontendVersion": "1.32.9",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,
