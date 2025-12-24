@@ -15,6 +15,7 @@ from typing_extensions import override
 from comfy_api.latest import ComfyExtension, io
 from .TRELLIS_2.trellis2.modules.image_feature_extractor import DinoV3FeatureExtractor  
 from transformers import AutoConfig
+import re
 
 MAX_SEED = np.iinfo(np.int32).max
 device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
@@ -38,13 +39,14 @@ class Trellis2_SM_Model(io.ComfyNode):
                 io.String.Input("repo",multiline=False,default="microsoft/TRELLIS.2-4B"),
                 io.Combo.Input("attn_backend",options= ["xformers","flash-attn"]),
                 io.Combo.Input("spconv_algo",options= ["auto","flash-native"]),  
+                io.Boolean.Input("texture_mode",optional=False),
             ],
             outputs=[
                 io.Custom("Trellis2_SM_Model").Output("model"),
                 ],
             )
     @classmethod
-    def execute(cls, repo,attn_backend,spconv_algo) -> io.NodeOutput:
+    def execute(cls, repo,attn_backend,spconv_algo, texture_mode) -> io.NodeOutput:
         if attn_backend=="xformers":
             os.environ['ATTN_BACKEND'] = 'xformers'
         else:
@@ -57,8 +59,14 @@ class Trellis2_SM_Model(io.ComfyNode):
             repo=PureWindowsPath(repo).as_posix()
         else:
             raise "need fill repo"  
-        from .TRELLIS_2.trellis2.pipelines import Trellis2ImageTo3DPipeline
-        model=Trellis2ImageTo3DPipeline.from_pretrained(repo)
+        if texture_mode:
+            from .TRELLIS_2.trellis2.pipelines import Trellis2TexturingPipeline
+            model=Trellis2TexturingPipeline.from_pretrained(repo,config_file="texturing_pipeline.json")
+            model.texture_mode=True
+        else:
+            from .TRELLIS_2.trellis2.pipelines import Trellis2ImageTo3DPipeline
+            model=Trellis2ImageTo3DPipeline.from_pretrained(repo,config_file= "pipeline.json")
+            model.texture_mode=False
         return io.NodeOutput(model)
     
 class Trellis2_SM_Dino(io.ComfyNode):
@@ -97,24 +105,25 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
             inputs=[
                 io.Custom("Trellis2_SM_Dino").Input("model"),
                 io.Image.Input("image"),# [B,H,W,C], C=3
-                io.String.Input("birefnet_repo",default=""),
+                io.String.Input("mesh_path",default=""),
                 io.Combo.Input("birefnet_ckpt",options= ["none"] + folder_paths.get_filename_list("dinov2")),
                 io.Boolean.Input("low_vram",default=True),
                 io.Mask.Input("mask",optional=True),    
                 ],
             outputs=[
-                io.Conditioning.Output(display_name="cond"),
+                io.Conditioning.Output(display_name="conds"),
                 ],
             )
     @classmethod
-    def execute(cls, model,image,birefnet_repo,birefnet_ckpt,low_vram,mask=None) -> io.NodeOutput:
+    def execute(cls, model,image,mesh_path,birefnet_ckpt,low_vram,mask=None) -> io.NodeOutput:
+        # preprocess image
         rmgb_ckpt_path=folder_paths.get_full_path("dinov2", birefnet_ckpt) if birefnet_ckpt!="none" else None
         if   mask is not None:
-            assert mask.shape[1]!=64 ,"mask shape must be [B,H,W] or HW ,[64 64] is not a useable mask shape，如果图片不带mask,则使用默认输出的mask是64" #如果图片不带mask,则使用默认输出的mask是64
-            image_list=image2alpha(image,mask)
-        elif birefnet_repo or  rmgb_ckpt_path is not None:
-            image_list=tensor2imglist(image) #normal iamge
-            if rmgb_ckpt_path is not None:
+            if mask.shape[1]!=64 :
+                image_list=image2alpha(image,mask)
+            elif mask.shape[1]==64 and  rmgb_ckpt_path is not None:
+                print("mask shape is [64 64] use birefnet，如果图片不带mask,则使用birefnet") 
+                image_list=tensor2imglist(image) #normal iamge  
                 print("Loading BriaRMBG 2.0 model...")
                 from .facebookresearch.RMBG.birefnet import BiRefNet
                 config = AutoConfig.from_pretrained(os.path.join(current_path,"facebookresearch/RMBG"), trust_remote_code=True)
@@ -123,13 +132,21 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
                 rembg_model.load_state_dict(sd,strict=False)
                 del sd
                 rembg_model.eval()    
-                repo=False 
+                image_list=preprocess_image2alpha(image_list,device,rembg_model,False,low_vram)
             else:
-                repo=True
-                from .TRELLIS_2.trellis2.pipelines.rembg import BiRefNet
-                birefnet_repo=PureWindowsPath(birefnet_repo).as_posix()
-                rembg_model=BiRefNet(birefnet_repo)
-            image_list=preprocess_image2alpha(image_list,device,rembg_model,repo,low_vram)
+                raise "mask shape must be [B,H,W] or HW ,[64 64] is not a useable mask shape，如果图片不带mask,则使用默认输出的mask是64" #如果图片不带mask,则使用默认输出的mask是64
+                
+        elif rmgb_ckpt_path is not None:
+            image_list=tensor2imglist(image) #normal iamge  
+            print("Loading BriaRMBG 2.0 model...")
+            from .facebookresearch.RMBG.birefnet import BiRefNet
+            config = AutoConfig.from_pretrained(os.path.join(current_path,"facebookresearch/RMBG"), trust_remote_code=True)
+            rembg_model = BiRefNet(True,config=config)
+            sd=comfy.utils.load_torch_file(rmgb_ckpt_path)
+            rembg_model.load_state_dict(sd,strict=False)
+            del sd
+            rembg_model.eval()    
+            image_list=preprocess_image2alpha(image_list,device,rembg_model,False,low_vram)
         else:
             raise "need link mask or birefnet_repo or birefnet_ckpt"
         model.to(device)
@@ -144,8 +161,33 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
                 cond_dict[image_size]=conds
             cond_list.append(cond_dict)
         if low_vram:
-            model.cpu()
-        return io.NodeOutput(cond_list)
+            model.to("cpu")
+
+        mesh_list=[]
+        if mesh_path!="":
+            mesh_path=PureWindowsPath(mesh_path).as_posix()
+            import trimesh
+            if os.path.isfile(mesh_path):
+                mesh_list = [trimesh.load(mesh_path)]
+            elif os.path.isdir(mesh_path):
+                ply_files = []
+                for root, dirs, files in os.walk(mesh_path):
+                    for file in files:
+                        if file.lower().endswith('.ply'):
+                            ply_files.append(os.path.abspath(os.path.join(root, file)))
+                
+                if ply_files:
+                    for i in ply_files:
+                        mesh = trimesh.load(i) 
+                        mesh_list.append(mesh) 
+                else:
+                    print("目录中没有找到.ply文件")
+            else:
+                print ("mesh_path is not a file or directory")
+        cond_dict={}
+        cond_dict["cond_list"]=cond_list
+        cond_dict["mesh_list"]=mesh_list
+        return io.NodeOutput(cond_dict)
 
 
 class Trellis2_SM_Sampler(io.ComfyNode):
@@ -178,31 +220,48 @@ class Trellis2_SM_Sampler(io.ComfyNode):
             print("o_voxel not install, output none ") 
         output_path = []
         model.to(device)
-        for cond in conds:
-            mesh = model.run(cond,seed=seed,pipeline_type=pipeline_type)[0] #default 1024_cascade
-            mesh.simplify(16777216) # nvdiffrast limit
-            prefix = ''.join(random.choice("0123456789") for _ in range(5))
-            glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}.glb"
-            if use_voxel: 
-                glb = o_voxel.postprocess.to_glb(
-                    vertices            =   mesh.vertices,
-                    faces               =   mesh.faces,
-                    attr_volume         =   mesh.attrs,
-                    coords              =   mesh.coords,
-                    attr_layout         =   mesh.layout,
-                    voxel_size          =   mesh.voxel_size,
-                    aabb                =   [[-0.5, -0.5, -0.5], [0.5, 0.5, 0.5]],
-                    decimation_target   =   1000000,
-                    texture_size        =   texture_size,
-                    remesh              =   remesh,
-                    remesh_band         =   1,
-                    remesh_project      =   0,
-                    verbose             =   True
-                )
-                glb.export(glb_path, extension_webp=True)
-            output_path.append(glb_path)
+        cond_list=conds["cond_list"]
+        mesh_list=conds["mesh_list"]
+        if model.texture_mode and not mesh_list:
+            raise("texture_mode is True, but mesh_list is empty,使用材质模式需要填入ply目录或者文件路径")
+        if not model.texture_mode and mesh_list:
+            print("texture_mode is False, but mesh_list is not empty,使用的常规模式，但是有mesh输入，忽略mesh输入")
+        if not model.texture_mode:
+            for cond in cond_list:
+                mesh = model.run(cond,seed=seed,pipeline_type=pipeline_type)[0] #default 1024_cascade
+                mesh.simplify(16777216) # nvdiffrast limit
+                prefix = ''.join(random.choice("0123456789") for _ in range(5))
+                glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}.glb"
+                if use_voxel: 
+                    glb = o_voxel.postprocess.to_glb(
+                        vertices            =   mesh.vertices,
+                        faces               =   mesh.faces,
+                        attr_volume         =   mesh.attrs,
+                        coords              =   mesh.coords,
+                        attr_layout         =   mesh.layout,
+                        voxel_size          =   mesh.voxel_size,
+                        aabb                =   [[-0.5, -0.5, -0.5], [0.5, 0.5, 0.5]],
+                        decimation_target   =   1000000,
+                        texture_size        =   texture_size,
+                        remesh              =   remesh,
+                        remesh_band         =   1,
+                        remesh_project      =   0,
+                        verbose             =   True
+                    )
+                    glb.export(glb_path, extension_webp=True)
+                output_path.append(glb_path)
+        else:
+            resolution = int(re.search(r'\d+', pipeline_type).group())
+            for cond,mesh in zip(cond_list,mesh_list):
+                prefix = ''.join(random.choice("0123456789") for _ in range(5))
+                glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}_texture.glb"
+                output = model.run(mesh,cond,seed=seed,resolution=resolution) 
+                output.export(glb_path, extension_webp=True)
+                output_path.append(glb_path)           
+
         model_path = '\n'.join(output_path)
         model.to("cpu")
+        torch.cuda.empty_cache()
         return io.NodeOutput(model_path)
 
 
