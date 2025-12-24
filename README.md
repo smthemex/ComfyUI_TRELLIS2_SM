@@ -2,6 +2,8 @@
 [TRELLIS.2](https://github.com/microsoft/TRELLIS.2):Native and Compact Structured Latents for 3D Generation,load single dinov3
 
 # Update
+* update texture mode support /同步官方的材质赋予模式，只需要一个ply 加贴图，就可以赋予PBR材质
+* if use texture mode  need update json files ， 如果使用材质模式，主模型的json文件有几个是修改了的，注意同步，外置mesh接口 迟点更新
 * 更适合中国宝宝的插件  make it comfy，
 
 # 1. Installation
@@ -59,13 +61,18 @@ pip install /tmp/extensions/o-voxel --no-build-isolation
     |-- RMBG.safetensors   # rename or not
 --  any_path/TRELLIS.2-4B/
     |-- ckpts
-        |-- all files  #所有文件
+        |-- all files  #所有文件  # if use texture mode  need update it 如果使用材质模式，模型的json文件有几个是修改了的，注意同步
     |-- pipeline.json
+    |-- texturing_pipeline.json # texture mode 
+
 ```
 
 
 # Example
+* normal image2glb
 ![](https://github.com/smthemex/ComfyUI_TRELLIS2_SM/blob/main/example_workflows/example.png)
+* ply+imamg,texture mode /PRB材质模式
+![](https://github.com/smthemex/ComfyUI_TRELLIS2_SM/blob/main/example_workflows/example_t.png)
 
 # Citation
 ```
