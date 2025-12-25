@@ -255,7 +255,7 @@ class Trellis2_SM_Sampler(io.ComfyNode):
             for cond,mesh in zip(cond_list,mesh_list):
                 prefix = ''.join(random.choice("0123456789") for _ in range(5))
                 glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}_texture.glb"
-                output = model.run(mesh,cond,seed=seed,resolution=resolution) 
+                output = model.run(mesh,cond,seed=seed,resolution=resolution,texture_size=texture_size) 
                 output.export(glb_path, extension_webp=True)
                 output_path.append(glb_path)           
 
