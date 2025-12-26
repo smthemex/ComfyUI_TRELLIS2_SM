@@ -69,26 +69,43 @@ def image2alpha(images: torch.Tensor, masks: torch.Tensor) -> list:
     return output_list
 
 def prepare_image(image, rmbg_net=None):
-    image_size = (1024, 1024)
+ 
+    original_width, original_height = image.size
+    max_size = max(original_width, original_height)
+    # 计算需要填充的尺寸到1024
+    scale = min(1, 1024 / max_size)
+    new_width = int(original_width * scale)
+    new_height = int(original_height * scale)
+    image_resized = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    
+
+    padded_image = Image.new('RGB', (1024, 1024), (0, 0, 0))  # 黑底
+    
+    # 将缩放后的图像粘贴到中心
+    paste_x = (1024 - new_width) // 2
+    paste_y = (1024 - new_height) // 2
+    padded_image.paste(image_resized, (paste_x, paste_y))
+
+
     transform_image = transforms.Compose([
-        transforms.Resize(image_size),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
-    input_images = transform_image(image).unsqueeze(0).to('cuda')
+    input_images = transform_image(padded_image).unsqueeze(0).to('cuda')
 
     # Prediction
     with torch.no_grad():
         preds = rmbg_net(input_images)[-1].sigmoid().cpu()
     pred = preds[0].squeeze()
     pred_pil = transforms.ToPILImage()(pred)
-    mask = pred_pil.resize(image.size)
-    image.putalpha(mask)
+    mask = pred_pil.resize(padded_image.size)
+    padded_image.putalpha(mask)
+    #padded_image.save(f"_2temp.png") 
 
-    return image
+    return padded_image
 
 
-def preprocess_image2alpha(images: list,device,rembg_model=None,repo=True,low_vram=True) -> Image.Image:
+def preprocess_image2alpha(images: list,device,rembg_model=None,repo=False,low_vram=True) -> Image.Image:
     """
     Preprocess the images .
     """
@@ -128,7 +145,7 @@ def preprocess_image2alpha(images: list,device,rembg_model=None,repo=True,low_vr
         output = np.array(output).astype(np.float32) / 255
         output = output[:, :, :3] * output[:, :, 3:4]
         output = Image.fromarray((output * 255).astype(np.uint8))
-        #output.save(f"{i}temp.png")  
+        #output.save(f"{i}temp_.png")  
         output_list.append(output)
     return output_list
 
@@ -362,10 +379,10 @@ def tensor2pil(tensor):
 def tensor2imglist(image):# pil
     B, _, _, _ = image.size()
     if B == 1:
-        list_out = [tensor2pil_preprocess(image)]
+        list_out = [tensor2pil(image)]
     else:
         image_list = torch.chunk(image, chunks=B)
-        list_out = [tensor2pil_preprocess(i) for i in image_list]
+        list_out = [tensor2pil(i) for i in image_list]
     return list_out
 
 def tensor2pil_preprocess(image):
@@ -373,9 +390,7 @@ def tensor2pil_preprocess(image):
     cv_image = center_resize_pad(cv_image, 512, 512)
     img=cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
     iamge_pil=Image.fromarray(img)
-    # import datetime
-    # timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    # iamge_pil.save(f"{timestamp}_b.png")
+
     return  iamge_pil
 
 def cf_tensor2cv(tensor,width, height):
