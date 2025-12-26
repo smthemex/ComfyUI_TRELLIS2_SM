@@ -168,17 +168,39 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
             mesh_path=PureWindowsPath(mesh_path).as_posix()
             import trimesh
             if os.path.isfile(mesh_path):
-                mesh_list = [trimesh.load(mesh_path)]
+                mesh_=trimesh.load(mesh_path)
+                if isinstance(mesh_, trimesh.Scene):
+                    mesh_ = trimesh.util.concatenate([
+                            trimesh.Trimesh(vertices=g.vertices, faces=g.faces) 
+                            for g in mesh_.geometry.values() 
+                            if hasattr(g, 'vertices') and hasattr(g, 'faces')
+                        ])
+                    mesh_list = [mesh_]
+                elif not isinstance(mesh_, trimesh.Trimesh):
+                    raise ValueError(' not a supported mesh type. 输入文件不是有效的网格或场景')
+                else:
+                    mesh_list = [mesh_]
             elif os.path.isdir(mesh_path):
                 ply_files = []
                 for root, dirs, files in os.walk(mesh_path):
                     for file in files:
-                        if file.lower().endswith('.ply'):
+                        if file.lower().endswith('.ply') or file.lower().endswith('.obj') or file.lower().endswith('.glb'):
                             ply_files.append(os.path.abspath(os.path.join(root, file)))
                 
                 if ply_files:
                     for i in ply_files:
                         mesh = trimesh.load(i) 
+                        if isinstance(mesh, trimesh.Scene):
+                            geometries = list(mesh.geometry.values())
+                            if geometries:
+                                mesh = trimesh.util.concatenate([
+                                    g if isinstance(g, trimesh.Trimesh) else trimesh.Trimesh(vertices=g.vertices, faces=getattr(g, 'faces', []))
+                                    for g in geometries
+                                ])
+                        elif not isinstance(mesh, trimesh.Trimesh):
+                            raise ValueError(' not a supported mesh type. 输入文件不是有效的网格或场景')
+                        else:
+                            pass
                         mesh_list.append(mesh) 
                 else:
                     print("目录中没有找到.ply文件")
@@ -255,7 +277,7 @@ class Trellis2_SM_Sampler(io.ComfyNode):
             for cond,mesh in zip(cond_list,mesh_list):
                 prefix = ''.join(random.choice("0123456789") for _ in range(5))
                 glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}_texture.glb"
-                output = model.run(mesh,cond,seed=seed,resolution=resolution,texture_size=texture_size) 
+                output = model.run(mesh,cond,seed=seed,resolution=resolution,) 
                 output.export(glb_path, extension_webp=True)
                 output_path.append(glb_path)           
 
