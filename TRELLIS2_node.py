@@ -163,7 +163,7 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
         if low_vram:
             model.to("cpu")
 
-        mesh_list=[]
+       
         if mesh_path!="":
             mesh_path=PureWindowsPath(mesh_path).as_posix()
             import trimesh
@@ -186,7 +186,7 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
                     for file in files:
                         if file.lower().endswith('.ply') or file.lower().endswith('.obj') or file.lower().endswith('.glb'):
                             ply_files.append(os.path.abspath(os.path.join(root, file)))
-                
+                mesh_list=[]
                 if ply_files:
                     for i in ply_files:
                         mesh = trimesh.load(i) 
@@ -203,9 +203,13 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
                             pass
                         mesh_list.append(mesh) 
                 else:
+                    mesh_list=[]
                     print("目录中没有找到.ply文件")
             else:
+                mesh_list=[]
                 print ("mesh_path is not a file or directory")
+        else:
+            mesh_list=[]
         cond_dict={}
         cond_dict["cond_list"]=cond_list
         cond_dict["mesh_list"]=mesh_list
