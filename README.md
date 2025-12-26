@@ -2,7 +2,7 @@
 [TRELLIS.2](https://github.com/microsoft/TRELLIS.2):Native and Compact Structured Latents for 3D Generation,load single dinov3
 
 # Update
-* update texture mode support /同步官方的材质赋予模式，只需要一个ply 加贴图，就可以赋予PBR材质
+* update texture mode support /同步官方的材质赋予模式，只需要一个白膜（ply，obj，glb） 加贴图，就可以赋予PBR材质
 * if use texture mode  need update json files ， 如果使用材质模式，主模型的json文件有几个是修改了的，注意同步，外置mesh接口 迟点更新
 * 更适合中国宝宝的插件  make it comfy，
 
