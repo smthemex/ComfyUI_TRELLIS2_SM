@@ -5,7 +5,7 @@ import numpy as np
 import os
 import torch
 from pathlib import PureWindowsPath
-from .utils import glb2obj_,obj2fbx_,tensor2imglist,preprocess_image2alpha,image2alpha
+from .utils import save_optional,tensor2imglist,preprocess_image2alpha,image2alpha,setup_cuda_arch_list
 import folder_paths
 import random
 import numpy as np
@@ -26,6 +26,7 @@ if not os.path.exists(weigths_dinov2_current_path):
     os.makedirs(weigths_dinov2_current_path)
 folder_paths.add_model_folder_path("dinov2", weigths_dinov2_current_path)
 
+setup_cuda_arch_list() # some wheel need to diferent arch
 
 class Trellis2_SM_Model(io.ComfyNode):
     @classmethod
@@ -163,7 +164,6 @@ class Trellis2_SM_Preprocess(io.ComfyNode):
         if low_vram:
             model.to("cpu")
 
-       
         if mesh_path!="":
             mesh_path=PureWindowsPath(mesh_path).as_posix()
             import trimesh
@@ -231,13 +231,15 @@ class Trellis2_SM_Sampler(io.ComfyNode):
                 io.Int.Input("texture_size", default=4096, min=512, max=MAX_SEED, step=512, display_mode=io.NumberDisplay.number),
                 io.Combo.Input("pipeline_type",options=['1024_cascade','1024','512','1536_cascade']),
                 io.Boolean.Input("remesh",default=True),
+                io.Boolean.Input("save_obj",default=True),
+                io.Boolean.Input("save_fbx",default=False),
             ],
             outputs=[
                 io.String.Output(display_name="model_path"),
                 ],
         )
     @classmethod
-    def execute(cls, model,conds,seed,texture_size,pipeline_type,remesh) -> io.NodeOutput: # 暂时按默认参数跑 use default parameters
+    def execute(cls, model,conds,seed,texture_size,pipeline_type,remesh,save_obj,save_fbx) -> io.NodeOutput: # 暂时按默认参数跑 use default parameters
         try:
             import o_voxel
             use_voxel = True
@@ -258,6 +260,7 @@ class Trellis2_SM_Sampler(io.ComfyNode):
                 mesh.simplify(16777216) # nvdiffrast limit
                 prefix = ''.join(random.choice("0123456789") for _ in range(5))
                 glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}.glb"
+                obj_path = f"{folder_paths.get_output_directory()}/obj_{prefix}/Trellis2_{prefix}.obj"
                 if use_voxel: 
                     glb = o_voxel.postprocess.to_glb(
                         vertices            =   mesh.vertices,
@@ -275,14 +278,17 @@ class Trellis2_SM_Sampler(io.ComfyNode):
                         verbose             =   True
                     )
                     glb.export(glb_path, extension_webp=True)
+                    save_optional(glb,save_obj,save_fbx,obj_path)
                 output_path.append(glb_path)
         else:
             resolution = int(re.search(r'\d+', pipeline_type).group())
             for cond,mesh in zip(cond_list,mesh_list):
                 prefix = ''.join(random.choice("0123456789") for _ in range(5))
                 glb_path = f"{folder_paths.get_output_directory()}/Trellis2_{prefix}_texture.glb"
+                obj_path = f"{folder_paths.get_output_directory()}/obj_{prefix}/Trellis2_{prefix}.obj"
                 output = model.run(mesh,cond,seed=seed,resolution=resolution,) 
                 output.export(glb_path, extension_webp=True)
+                save_optional(output,save_obj,save_fbx,obj_path)
                 output_path.append(glb_path)           
 
         model_path = '\n'.join(output_path)
@@ -290,65 +296,6 @@ class Trellis2_SM_Sampler(io.ComfyNode):
         torch.cuda.empty_cache()
         return io.NodeOutput(model_path)
 
-
-class Trellis2_SM_Save(io.ComfyNode):
-    @classmethod
-    def define_schema(cls):
-        
-        return io.Schema(
-            node_id="Trellis2_SM_Save",
-            display_name="Trellis2_SM_Save",
-            category="Trellis2_SM",
-            inputs=[
-                io.String.Input("model_path",force_input=True),#{ }
-                io.Boolean.Input("glb2obj",default=False),
-                io.Boolean.Input("glb2fbx",default=False),
-                    # HW or BHW
-            ],
-            outputs=[
-                io.String.Output(display_name="model_path"),
-                ],
-        )
-    @classmethod
-    def execute(cls, model_path,glb2obj,glb2fbx,) -> io.NodeOutput:
-        output_path =  [line for line in model_path.splitlines() if line.strip()]
-        if glb2obj:
-            obj_paths=[]
-            for path in output_path:
-                obj_path=os.path.join(os.path.split(path)[0],os.path.split(path)[1].replace(".glb",".obj"))
-                glb2obj_(path, obj_path)
-                obj_paths.append(obj_path)
-            if glb2fbx:
-                fbx_paths=[]
-                for i in obj_paths:
-                    fbx_path = os.path.join(os.path.split(i)[0], os.path.split(i)[1].replace(".obj", ".fbx"))
-                    obj2fbx_(i, fbx_path)
-                    fbx_paths.append(fbx_path)
-                output_path=fbx_paths
-            else:
-                output_path=obj_paths
-        else:
-            if glb2fbx:
-                obj_paths = []
-                fbx_paths = []
-                for path in output_path:
-                    obj_path = os.path.join(os.path.split(path)[0], os.path.split(path)[1].replace(".glb", ".obj"))
-                    glb2obj_(path, obj_path)
-                    obj_paths.append(obj_path)
-                for i in obj_paths:
-                    fbx_path = os.path.join(os.path.split(i)[0], os.path.split(i)[1].replace(".obj", ".fbx"))
-                    obj2fbx_(i, fbx_path)
-                    fbx_paths.append(fbx_path)
-                output_path = obj_paths
-        model_path = '\n'.join(output_path)  
-        return io.NodeOutput(model_path)
-
-
-from aiohttp import web
-from server import PromptServer
-@PromptServer.instance.routes.get("/Trellis2_SM_Extension")
-async def get_hello(request):
-    return web.json_response("Trellis2_SM_Extension")
 
 class Trellis2_SM_Extension(ComfyExtension):
     @override
@@ -358,7 +305,6 @@ class Trellis2_SM_Extension(ComfyExtension):
             Trellis2_SM_Dino,
             Trellis2_SM_Preprocess,
             Trellis2_SM_Sampler,
-            Trellis2_SM_Save,
         ]
 async def comfy_entrypoint() -> Trellis2_SM_Extension:  # ComfyUI calls this to load your extension and its nodes.
     return Trellis2_SM_Extension()
