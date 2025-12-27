@@ -13,6 +13,16 @@ from comfy.utils import common_upscale,ProgressBar
 import folder_paths
 current_path = os.path.dirname(os.path.abspath(__file__))
 
+def setup_cuda_arch_list():
+
+    if torch.cuda.is_available():
+
+        major, minor = torch.cuda.get_device_capability()
+        arch = f"{major}.{minor}"
+        os.environ['TORCH_CUDA_ARCH_LIST'] = f"{arch}+PTX"
+        print(f"Set TORCH_CUDA_ARCH_LIST to: {arch}+PTX")
+    else:
+        print("CUDA not available, skipping TORCH_CUDA_ARCH_LIST setup")
 
 
 def image2alpha(images: torch.Tensor, masks: torch.Tensor) -> list:
@@ -63,7 +73,7 @@ def image2alpha(images: torch.Tensor, masks: torch.Tensor) -> list:
         
         # Convert to PIL Image
         pil_img = Image.fromarray(rgba_img, 'RGBA') 
-        #pil_img.save(f"{i}temp.png")          
+        pil_img.save(f"{i}temp.png")          
         output_list.append(pil_img)
     output_list= preprocess_image2alpha(output_list,device='cpu')   
     return output_list
@@ -149,32 +159,31 @@ def preprocess_image2alpha(images: list,device,rembg_model=None,repo=False,low_v
         output_list.append(output)
     return output_list
 
-#https://github.com/Abecid/realtime-3d-stylization-drawing/blob/97a687f148cec04e107f7fec8986c8b5615af1ec/gradio_app.py#L33
-def glb2obj_(glb_path, obj_path):
-    print('Converting glb to obj')
-    mesh = trimesh.load(glb_path)
-    
-    if isinstance(mesh, trimesh.Scene):
-        vertices = 0
-        for g in mesh.geometry.values():
-            vertices += g.vertices.shape[0]
-    elif isinstance(mesh, trimesh.Trimesh):
-        vertices = mesh.vertices.shape[0]
-    else:
-        raise ValueError('It is not mesh or scene')
-    
-    # if vertices > 300000:
-    #     raise ValueError('Too many vertices')
+
+def save_optional(mesh,save_obj,save_fbx,obj_path) -> None:
     if not os.path.exists(os.path.dirname(obj_path)):
         os.makedirs(os.path.dirname(obj_path))
-    mesh.export(obj_path)
+    if save_obj:
+        mesh.export(obj_path)
+        if save_fbx:
+            try:
+                obj2fbx_(obj_path)
+            except:
+                print("obj2fbx error")
+                pass
+    elif save_fbx and not save_obj:
+        mesh.export(obj_path)
+        try:
+            obj2fbx_(obj_path)
+        except:
+            print("obj2fbx error")
+            pass
     print('Convert Done')
 
-#https://github.com/robotflow-initiative/model_format_converter/blob/8f45efcfbec22444869548b369f7f77cdf9b04e4/model_format_converter/blender_scripts/obj2fbx.py#L6
-def obj2fbx_(obj_path, fbx_path):
-    # print all objects
-    #for obj in bpy.data.objects:
-    #    print(obj.name)
+def obj2fbx_(obj_path):
+    fbx_path=obj_path.replace('.obj', '.fbx')
+    if not os.path.exists(os.path.dirname(fbx_path)):
+        os.makedirs(os.path.dirname(fbx_path))
     import bpy
     if "Cube" in bpy.data.meshes:
         mesh = bpy.data.meshes["Cube"]
